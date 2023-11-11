@@ -1,6 +1,5 @@
 import { nanoid } from "nanoid";
 import { Accessor, JSX, Match, Show, Switch, createSignal } from "solid-js";
-import { A } from "solid-start";
 import { createServerAction$ } from "solid-start/server";
 import { createPaste } from "~/data/paste";
 import { CreatePasteDto, PasteDto } from "~/data/types";
@@ -8,6 +7,7 @@ import { base64ToBinary, binaryToBase64, encrypt } from "~/util";
 
 type CreatePasteLocalDto = Omit<CreatePasteDto, "content"> & {
   content: string;
+  apiKey?: string;
 };
 
 export function PasteForm({
@@ -17,9 +17,19 @@ export function PasteForm({
   type: PasteDto["type"];
   children: (props: { disabled: Accessor<boolean> }) => JSX.Element;
 }) {
-  const [, save] = createServerAction$(async (data: CreatePasteLocalDto) => {
-    await createPaste({ ...data, content: base64ToBinary(data.content) });
-  });
+  const [, save] = createServerAction$(
+    async ({ apiKey, ...data }: CreatePasteLocalDto) => {
+      if (!process.env.API_KEY || apiKey === process.env.API_KEY) {
+        const paste = await createPaste({
+          ...data,
+          content: base64ToBinary(data.content),
+        });
+        return new Response(paste.id, { status: 201 });
+      } else {
+        return new Response("Invalid API key", { status: 401 });
+      }
+    }
+  );
 
   const [secret, setSecret] = createSignal(false);
   const [id, setId] = createSignal<string | false | null>(null);
@@ -59,8 +69,15 @@ export function PasteForm({
         payload.iv = iv;
       }
 
-      await save(payload);
-      setId(id);
+      if (import.meta.env.VITE_PROTECTED === "true") {
+        payload.apiKey = prompt("Please enter your API key") ?? undefined;
+      }
+      const response = await save(payload);
+      if (response?.status === 401) {
+        throw new Error(await response.text());
+      } else {
+        setId((await response?.text()) ?? id);
+      }
     } catch (e) {
       setId(false);
       setDisabled(false);
@@ -102,7 +119,11 @@ export function PasteForm({
               <strong class="text-xl">Error</strong>
               <p>
                 An error occurred when trying to share your content. Please
-                check the form and try again.
+                check the form
+                {import.meta.env.VITE_PROTECTED === "true"
+                  ? " and API key "
+                  : " "}
+                and try again.
               </p>
             </div>
           </Show>

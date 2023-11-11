@@ -5,6 +5,13 @@ import { CreatePasteDto } from "~/data/types";
 import { encrypt } from "~/util";
 
 export async function POST({ request }: APIEvent) {
+  if (process.env.API_KEY) {
+    const apiKey = request.headers.get("x-api-key");
+    if (process.env.API_KEY !== apiKey) {
+      return new Response("Invalid API key", { status: 401 });
+    }
+  }
+
   let body: CreatePasteDto;
 
   const contentType = request.headers.get("content-type");
