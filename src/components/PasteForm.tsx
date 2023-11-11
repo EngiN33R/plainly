@@ -24,6 +24,7 @@ export function PasteForm({
   const [secret, setSecret] = createSignal(false);
   const [id, setId] = createSignal<string | false | null>(null);
   const [disabled, setDisabled] = createSignal(false);
+  const [copied, setCopied] = createSignal(false);
 
   const onSubmit = async (e: Event) => {
     e.preventDefault();
@@ -74,15 +75,25 @@ export function PasteForm({
     >
       <Switch>
         <Match when={!!id()}>
-          <div class="bg-green-600 text-white px-4 py-4 rounded-lg text-center">
+          <div class="bg-green-600 max-w-3xl w-full mx-auto text-white px-4 py-4 rounded-lg text-center">
             <strong class="text-4xl">Success!</strong>
-            <p class="text-xl mt-4">
-              Your shared content is available at{" "}
-              <A class="underline" href={`/${id()}`}>
-                {import.meta.env.VITE_ROOT_URL}/{id()}
-              </A>
-              .
-            </p>
+            <p class="text-xl my-4">Your shared content is now public:</p>
+            <input
+              id="id"
+              name="id"
+              class="py-2 px-3 rounded-md bg-slate-800 bg-opacity-50 text-white cursor-pointer w-full text-center"
+              value={`${import.meta.env.VITE_ROOT_URL}/${id()}`}
+              readonly
+              onClick={(e) => {
+                e.currentTarget.select();
+                e.currentTarget.setSelectionRange(0, 99999);
+                navigator.clipboard.writeText(e.currentTarget.value);
+                setCopied(true);
+              }}
+            />
+            <Show when={copied()}>
+              <small>URL copied!</small>
+            </Show>
           </div>
         </Match>
         <Match when={!id()}>
