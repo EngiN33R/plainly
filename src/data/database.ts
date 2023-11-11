@@ -6,7 +6,7 @@ const sqlite = new SQLite("data/db.sqlite");
 if (process.platform === "win32") {
   sqlite.loadExtension("crypto.dll");
 } else {
-  sqlite.loadExtension("crypto.so");
+  sqlite.loadExtension("./crypto.so");
 }
 sqlite.pragma("journal_mode = WAL");
 
