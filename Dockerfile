@@ -8,7 +8,7 @@ WORKDIR /home/node
 # Build node_modules
 COPY --chown=node:node package*.json ./
 COPY --chown=node:node crypto.so ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy app source
 # Make sure it isn't dist/* because that will erase the directory structure
