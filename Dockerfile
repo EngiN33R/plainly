@@ -7,6 +7,7 @@ WORKDIR /home/node
 
 # Build node_modules
 COPY --chown=node:node package*.json ./
+COPY --chown=node:node crypto.so ./
 RUN npm ci --only=production
 
 # Copy app source

@@ -1,12 +1,17 @@
 import { db } from "./database";
-import { CreatePasteDto } from "./types";
+import { CreatePasteDto, PasteDto } from "./types";
 
-export async function findPasteById(id: string) {
-  return await db
+export async function findPasteById(id: string): Promise<PasteDto> {
+  const data = await db
     .selectFrom("pastes")
     .where("id", "=", id)
     .selectAll()
     .executeTakeFirstOrThrow();
+  const paste: PasteDto = {
+    ...data,
+    content: data.content.buffer,
+  };
+  return paste;
   // const row = db
   //   .prepare("SELECT * FROM pastes WHERE id = ? LIMIT 1")
   //   .get(id) as any;
@@ -23,7 +28,7 @@ export async function findPasteById(id: string) {
 export async function createPaste(paste: CreatePasteDto) {
   return await db
     .insertInto("pastes")
-    .values(paste)
+    .values({ ...paste, content: Buffer.from(paste.content) })
     .returningAll()
     .executeTakeFirstOrThrow();
   // const row = db

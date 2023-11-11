@@ -4,7 +4,11 @@ import { A } from "solid-start";
 import { createServerAction$ } from "solid-start/server";
 import { createPaste } from "~/data/paste";
 import { CreatePasteDto, PasteDto } from "~/data/types";
-import { encrypt } from "~/util";
+import { base64ToBinary, binaryToBase64, encrypt } from "~/util";
+
+type CreatePasteLocalDto = Omit<CreatePasteDto, "content"> & {
+  content: string;
+};
 
 export function PasteForm({
   type,
@@ -13,8 +17,8 @@ export function PasteForm({
   type: PasteDto["type"];
   children: (props: { disabled: Accessor<boolean> }) => JSX.Element;
 }) {
-  const [, save] = createServerAction$(async (data: CreatePasteDto) => {
-    await createPaste(data);
+  const [, save] = createServerAction$(async (data: CreatePasteLocalDto) => {
+    await createPaste({ ...data, content: base64ToBinary(data.content) });
   });
 
   const [secret, setSecret] = createSignal(false);
@@ -29,10 +33,19 @@ export function PasteForm({
         document.getElementById("create-form") as HTMLFormElement
       );
       setDisabled(true);
-      console.log(data);
       const id = data.get("id") as string;
-      const content = data.get("content") as string;
-      const payload: CreatePasteDto = { id, type, content };
+      const rawContent = data.get("content") as string | File;
+      const content =
+        typeof rawContent === "string"
+          ? new TextEncoder().encode(rawContent)
+          : await rawContent.arrayBuffer();
+      const payload: CreatePasteLocalDto = {
+        id,
+        type,
+        content: binaryToBase64(content),
+        filename: rawContent instanceof File ? rawContent.name : undefined,
+        mime: rawContent instanceof File ? rawContent.type : undefined,
+      };
       const isSecret = !!data.get("secret");
 
       if (isSecret) {
@@ -40,7 +53,7 @@ export function PasteForm({
           content,
           data.get("passphrase") as string
         );
-        payload.content = ciphertext;
+        payload.content = binaryToBase64(ciphertext);
         payload.salt = salt;
         payload.iv = iv;
       }
@@ -66,7 +79,7 @@ export function PasteForm({
             <p class="text-xl mt-4">
               Your shared content is available at{" "}
               <A class="underline" href={`/${id()}`}>
-                plainly.engi.io/{id()}
+                {import.meta.env.VITE_ROOT_URL}/{id()}
               </A>
               .
             </p>

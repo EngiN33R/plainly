@@ -37,8 +37,8 @@ export default function Default() {
 
         <nav class="mt-4 flex justify-between w-full gap-4">
           <Box href="/text">Text</Box>
-          <Box href="/text">Link</Box>
-          {/* <Box href="/text">File</Box> */}
+          <Box href="/link">Link</Box>
+          <Box href="/file">File</Box>
         </nav>
       </section>
     </>

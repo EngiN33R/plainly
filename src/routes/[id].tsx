@@ -1,15 +1,16 @@
 import { Match, Show, Switch, createEffect, createSignal } from "solid-js";
 import { RouteDataArgs, useRouteData } from "solid-start";
 import { createServerData$, redirect } from "solid-start/server";
+import { FileView } from "~/components/FileView";
 import { findPasteById } from "~/data/paste";
-import { decrypt } from "~/util";
+import { blobToDataURL, decrypt } from "~/util";
 
 export function routeData({ params }: RouteDataArgs) {
   return createServerData$(
     async ([, id]) => {
       const data = await findPasteById(id);
       if (data.type === "link" && !data.iv) {
-        throw redirect(data.content);
+        throw redirect(new TextDecoder("utf-8").decode(data.content));
       }
       return data;
     },
@@ -23,21 +24,18 @@ export default function View() {
   const paste = useRouteData<typeof routeData>();
   const [decoded, setDecoded] = createSignal("");
 
-  // const content = createMemo(() =>
-  //   paste()?.iv ? decoded() : paste()?.content
-  // );
-
-  createEffect(() => {
+  createEffect(async () => {
     const fetched = paste();
     const decodedValue = decoded();
     const content = document.getElementById(
       "content"
     ) as HTMLTextAreaElement | null;
-    if (content) {
-      if (fetched?.iv && fetched?.salt) {
+    if (fetched && fetched.type !== "file" && content) {
+      if (fetched.iv && fetched.salt) {
         content.value = decodedValue;
+        content.dispatchEvent(new Event("change", { bubbles: true }));
       } else {
-        content.value = fetched?.content || "";
+        content.value = new TextDecoder("utf-8").decode(fetched.content);
       }
     }
   });
@@ -58,6 +56,11 @@ export default function View() {
           </Match>
         </Switch>
       </h1>
+      <Show when={paste()?.type === "file"}>
+        <h2 class="text-center text-2xl font-semibold text-white">
+          {paste()?.filename}
+        </h2>
+      </Show>
       <Show when={paste()?.iv}>
         <form
           onSubmit={async (e) => {
@@ -71,10 +74,19 @@ export default function View() {
                 value.iv,
                 value.salt
               );
+              const decoder = new TextDecoder("utf-8");
               if (value.type === "link") {
-                location.href = plaintext;
-              } else {
-                setDecoded(plaintext);
+                const dec = decoder.decode(plaintext);
+                location.href = dec;
+              } else if (value.type === "text") {
+                const dec = decoder.decode(plaintext);
+                setDecoded(dec);
+              } else if (value.type === "file") {
+                setDecoded(
+                  await blobToDataURL(
+                    new Blob([plaintext], { type: value.mime ?? "text/plain" })
+                  )
+                );
               }
             }
           }}
@@ -101,12 +113,7 @@ export default function View() {
       </Show>
       <Switch>
         <Match when={paste()?.type === "file"}>
-          <button
-            type="submit"
-            class="w-full bg-slate-800 hover:bg-slate-900 px-8 py-3 rounded-md text-white font-semibold text-2xl transition-all duration-200 ease-in-out"
-          >
-            Download
-          </button>
+          <FileView paste={paste} decoded={decoded} />
         </Match>
         <Match when={paste()?.type === "text"}>
           <div class="flex flex-1 flex-col gap-2">

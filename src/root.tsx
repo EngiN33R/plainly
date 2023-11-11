@@ -42,9 +42,9 @@ export default function Root() {
                 <li class={`border-b-2 ${active("/link")}`}>
                   <A href="/link">Links</A>
                 </li>
-                {/* <li class={`border-b-2 ${active("/file")}`}>
-                  <A href="/link">Files</A>
-                </li> */}
+                <li class={`border-b-2 ${active("/file")}`}>
+                  <A href="/file">Files</A>
+                </li>
               </ul>
             </nav>
             <main class="main">

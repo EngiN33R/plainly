@@ -5,27 +5,46 @@ import { CreatePasteDto } from "~/data/types";
 import { encrypt } from "~/util";
 
 export async function POST({ request }: APIEvent) {
-  let body: CreatePasteDto & { passphrase?: string };
+  let body: CreatePasteDto;
 
   const contentType = request.headers.get("content-type");
-  if (contentType === "application/x-www-form-urlencoded") {
-    const formData = await new Response(request.body).formData();
-    body = {
-      id: formData.get("content") as string,
-      content: formData.get("content") as string,
-      type: formData.get("type") as "text" | "link" | "file",
-      passphrase: formData.get("passphrase") as string,
-    };
+  let passphrase: string | undefined;
+  if (contentType?.startsWith("multipart/form-data")) {
+    const formData = await request.formData();
+    passphrase = formData.get("passphrase") as string;
+    const value = formData.get("content") as string | File;
+    let content: ArrayBuffer;
+    let mime: string | undefined;
+    if (typeof value === "string") {
+      body = {
+        id: formData.get("id") as string,
+        content: new TextEncoder().encode(value),
+        type: formData.get("type") as "text" | "link" | "file",
+        mime,
+      };
+    } else {
+      content = await value.arrayBuffer();
+      mime = value.type;
+      body = {
+        id: formData.get("id") as string,
+        content: await value.arrayBuffer(),
+        type: formData.get("type") as "text" | "link" | "file",
+        mime: value.type,
+        filename: value.name,
+      };
+    }
   } else {
-    body = await new Response(request.body).json();
+    ({ passphrase, ...body } = (await new Response(
+      request.body
+    ).json()) as CreatePasteDto & { passphrase?: string });
   }
 
   if (!body.id) {
     body.id = nanoid(4);
   }
 
-  if (body.passphrase) {
-    const value = await encrypt(body.content, body.passphrase);
+  if (passphrase) {
+    const value = await encrypt(body.content, passphrase);
     body.content = value.ciphertext;
     body.salt = value.salt;
     body.iv = value.iv;

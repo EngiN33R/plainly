@@ -6,14 +6,17 @@ export interface Database {
 
 export interface PasteTable {
   id: string;
-  content: string;
+  content: ColumnType<Buffer, ArrayBuffer, ArrayBuffer>;
   type: "text" | "link" | "file";
+  mime: string | null;
+  filename: string | null;
   salt: string | null;
   iv: string | null;
   created: ColumnType<Date, string | undefined, never>;
 }
 
-export type PasteDto = Selectable<PasteTable>;
+export type RawPasteDto = Selectable<PasteTable>;
+export type PasteDto = Omit<RawPasteDto, "content"> & { content: ArrayBuffer };
 export type CreatePasteDto = Insertable<PasteTable>;
 export type UpdatePasteDto = Updateable<PasteTable>;
 
