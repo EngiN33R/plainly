@@ -4,7 +4,7 @@ import { A } from "solid-start";
 const Box = ({ href, children }: { href: string; children: JSX.Element }) => (
   <A
     href={href}
-    class="shadow-md border-2 bg-slate-800 bg-opacity-50 border-slate-700 border-opacity-50 rounded-lg flex flex-1 justify-center py-8 font-semibold text-white text-4xl cursor-pointer hover:bg-opacity-70 transition-all duration-300 ease-in-out"
+    class="shadow-md border-2 bg-slate-800 bg-opacity-50 border-slate-700 border-opacity-50 rounded-lg flex flex-1 justify-center py-4 sm:py-8 font-semibold text-white text-2xl sm:text-4xl cursor-pointer hover:bg-opacity-70 transition-all duration-300 ease-in-out"
   >
     {children}
   </A>
@@ -33,7 +33,7 @@ export default function Default() {
       </ul>
       <p class="mt-8 text-center text-white">What would you like to share?</p>
 
-      <nav class="mt-4 flex justify-between w-full gap-4">
+      <nav class="mt-4 flex justify-between w-full gap-4 flex-col sm:flex-row">
         <Box href="/text">Text</Box>
         <Box href="/link">Link</Box>
         <Box href="/file">File</Box>

@@ -148,7 +148,7 @@ export function PasteForm({
             <label for="passphrase" class="font-semibold text-white">
               Passphrase
             </label>
-            <div class="flex gap-6 items-center">
+            <div class="flex gap-2 sm:gap-6 flex-col justify-center sm:flex-row sm:items-center">
               <input
                 id="passphrase"
                 name="passphrase"
@@ -171,11 +171,13 @@ export function PasteForm({
                     ) as HTMLInputElement;
                     if (checked && !passphrase.value) {
                       passphrase.value = nanoid(48);
+                    } else if (!checked) {
+                      passphrase.value = "";
                     }
                   }}
                   disabled={disabled()}
                 />
-                <label class="font-semibold text-white" for="secret">
+                <label class="flex-1 font-semibold text-white" for="secret">
                   Secret?
                 </label>
               </div>
