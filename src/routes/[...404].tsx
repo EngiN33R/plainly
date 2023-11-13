@@ -2,28 +2,24 @@ import { A } from "solid-start";
 
 export default function NotFound() {
   return (
-    <main class="text-center mx-auto text-gray-700 p-4">
-      <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">
-        Not Found
+    <main
+      id="not-found"
+      class="py-8 max-w-xl mx-auto flex flex-col items-center"
+    >
+      <h1 class="text-center text-5xl font-semibold uppercase text-white">
+        Not found
       </h1>
-      <p class="mt-8">
-        Visit{" "}
-        <a
-          href="https://solidjs.com"
-          target="_blank"
-          class="text-sky-600 hover:underline"
-        >
-          solidjs.com
-        </a>{" "}
-        to learn how to build Solid apps.
+      <p class="mt-8 text-center text-white">
+        We couldn't find this resource. Looks like you may have gotten a broken
+        URL.
       </p>
-      <p class="my-4">
-        <A href="/" class="text-sky-600 hover:underline">
-          Home
-        </A>
-        {" - "}
-        <A href="/about" class="text-sky-600 hover:underline">
-          About Page
+      <p class="mt-4 text-center text-white">
+        If you got a link from a friend, make sure they gave you the right one.
+      </p>
+      <p class="mt-4 text-center text-white">
+        Why not{" "}
+        <A href="/" class="underline">
+          go back and share something new?
         </A>
       </p>
     </main>
