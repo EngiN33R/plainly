@@ -1,18 +1,26 @@
 import { Match, Show, Switch, createEffect, createSignal } from "solid-js";
 import { RouteDataArgs, useRouteData } from "solid-start";
-import { createServerData$, redirect } from "solid-start/server";
+import {
+  createServerAction$,
+  createServerData$,
+  redirect,
+} from "solid-start/server";
 import { FileView } from "~/components/FileView";
-import { findPasteById } from "~/data/paste";
+import { attemptDeletePaste, findPasteById } from "~/data/paste";
 import { blobToDataURL, decrypt } from "~/util";
 
 export function routeData({ params }: RouteDataArgs) {
   return createServerData$(
     async ([, id]) => {
-      const data = await findPasteById(id);
-      if (data.type === "link" && !data.iv) {
-        throw redirect(new TextDecoder("utf-8").decode(data.content));
+      try {
+        const data = await findPasteById(id);
+        if (data.type === "link" && !data.iv) {
+          throw redirect(new TextDecoder("utf-8").decode(data.content));
+        }
+        return data;
+      } catch (e) {
+        throw redirect("/");
       }
-      return data;
     },
     {
       key: ["pastes", params.id],
@@ -22,6 +30,14 @@ export function routeData({ params }: RouteDataArgs) {
 
 export default function View() {
   const paste = useRouteData<typeof routeData>();
+  const [, { Form: DeleteForm }] = createServerAction$(
+    async (formData: FormData) => {
+      const id = formData.get("id") as string;
+      const deleteCode = formData.get("delete_code") as string;
+      await attemptDeletePaste(id, deleteCode);
+    }
+  );
+
   const [decoded, setDecoded] = createSignal("");
 
   createEffect(async () => {
@@ -92,7 +108,7 @@ export default function View() {
           }}
           class="flex flex-col gap-2"
         >
-          <label for="key" class="font-semibold text-white">
+          <label for="passphrase" class="font-semibold text-white">
             Passphrase
           </label>
           <div class="flex gap-2 items-center">
@@ -129,6 +145,26 @@ export default function View() {
           </div>
         </Match>
       </Switch>
+      <DeleteForm class="flex flex-col gap-2">
+        <input type="hidden" name="id" value={paste()?.id} />
+        <label for="delete_code" class="font-semibold text-white">
+          Delete code
+        </label>
+        <div class="flex gap-2 items-center">
+          <input
+            id="delete_code"
+            name="delete_code"
+            type="password"
+            class="flex-1 py-2 px-3 rounded-md bg-slate-800 bg-opacity-50 text-white disabled:opacity-70 disabled:cursor-not-allowed"
+          />
+          <button
+            type="submit"
+            class="bg-red-700 hover:bg-red-800 px-6 h-full rounded-md text-white font-semibold text-md"
+          >
+            Delete
+          </button>
+        </div>
+      </DeleteForm>
     </div>
   );
 }

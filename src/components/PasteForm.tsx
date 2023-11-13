@@ -50,12 +50,14 @@ export function PasteForm({
         typeof rawContent === "string"
           ? new TextEncoder().encode(rawContent)
           : await rawContent.arrayBuffer();
+      const deleteCode = data.get("delete_code") as string;
       const payload: CreatePasteLocalDto = {
         id,
         type,
         content: binaryToBase64(content),
         filename: rawContent instanceof File ? rawContent.name : undefined,
         mime: rawContent instanceof File ? rawContent.type : undefined,
+        deleteCode,
       };
       const isSecret = !!data.get("secret");
 
@@ -177,6 +179,19 @@ export function PasteForm({
                 </label>
               </div>
             </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="delete_code" class="font-semibold text-white">
+              Delete code
+            </label>
+            <input
+              id="delete_code"
+              name="delete_code"
+              class="py-2 px-3 rounded-md bg-slate-800 bg-opacity-50 text-white"
+              value={nanoid(5)}
+              required
+              disabled={disabled()}
+            />
           </div>
           <button
             type="submit"

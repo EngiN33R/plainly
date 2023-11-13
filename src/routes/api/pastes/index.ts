@@ -18,36 +18,44 @@ export async function POST({ request }: APIEvent) {
   let passphrase: string | undefined;
   if (contentType?.startsWith("multipart/form-data")) {
     const formData = await request.formData();
+    const id = formData.get("id") as string;
+    const type = formData.get("type") as "text" | "link" | "file";
+    const value = formData.get("content") as string | File | null;
+    const deleteCode = formData.get("delete_code") as string;
     passphrase = formData.get("passphrase") as string;
-    const value = formData.get("content") as string | File;
-    let content: ArrayBuffer;
-    let mime: string | undefined;
+
+    if (!type || !value) {
+      return new Response("Missing required fields", { status: 400 });
+    }
+
     if (typeof value === "string") {
       body = {
-        id: formData.get("id") as string,
+        id,
         content: new TextEncoder().encode(value),
-        type: formData.get("type") as "text" | "link" | "file",
-        mime,
+        type,
+        deleteCode,
       };
     } else {
-      content = await value.arrayBuffer();
-      mime = value.type;
       body = {
-        id: formData.get("id") as string,
+        id,
         content: await value.arrayBuffer(),
-        type: formData.get("type") as "text" | "link" | "file",
+        type,
         mime: value.type,
         filename: value.name,
+        deleteCode,
       };
     }
   } else {
-    ({ passphrase, ...body } = (await new Response(
-      request.body
-    ).json()) as CreatePasteDto & { passphrase?: string });
+    ({ passphrase, ...body } = (await request.json()) as CreatePasteDto & {
+      passphrase?: string;
+    });
   }
 
   if (!body.id) {
     body.id = nanoid(4);
+  }
+  if (!body.deleteCode) {
+    body.deleteCode = nanoid(5);
   }
 
   if (passphrase) {
@@ -61,6 +69,6 @@ export async function POST({ request }: APIEvent) {
 
   return new Response(paste.id, {
     status: 201,
-    headers: { "Content-Type": "text/plain" },
+    headers: { "Content-Type": "text/plain", "X-Delete-Code": body.deleteCode },
   });
 }

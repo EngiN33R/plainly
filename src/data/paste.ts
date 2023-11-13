@@ -2,7 +2,7 @@ import { db } from "./database";
 import { CreatePasteDto, PasteDto } from "./types";
 
 export async function findPasteById(id: string): Promise<PasteDto> {
-  const data = await db
+  const { deleteCode, ...data } = await db
     .selectFrom("pastes")
     .where("id", "=", id)
     .selectAll()
@@ -44,4 +44,13 @@ export async function createPaste(paste: CreatePasteDto) {
   //   iv: row.iv,
   //   created: row.created,
   // };
+}
+
+export async function attemptDeletePaste(id: string, deleteCode: string) {
+  const [{ numDeletedRows }] = await db
+    .deleteFrom("pastes")
+    .where("id", "=", id)
+    .where("deleteCode", "=", deleteCode)
+    .execute();
+  return numDeletedRows === 1n;
 }

@@ -12,11 +12,14 @@ export interface PasteTable {
   filename: string | null;
   salt: string | null;
   iv: string | null;
+  deleteCode: string;
   created: ColumnType<Date, string | undefined, never>;
 }
 
 export type RawPasteDto = Selectable<PasteTable>;
-export type PasteDto = Omit<RawPasteDto, "content"> & { content: ArrayBuffer };
+export type PasteDto = Omit<RawPasteDto, "content" | "deleteCode"> & {
+  content: ArrayBuffer;
+};
 export type CreatePasteDto = Insertable<PasteTable>;
 export type UpdatePasteDto = Updateable<PasteTable>;
 
