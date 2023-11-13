@@ -47,11 +47,11 @@ export default function Root() {
                 </li>
               </ul>
             </nav>
-            <main class="main">
+            <div class="main">
               <Routes>
                 <FileRoutes />
               </Routes>
-            </main>
+            </div>
           </ErrorBoundary>
         </Suspense>
         <Scripts />

@@ -90,6 +90,7 @@ export function PasteForm({
     <form
       id="create-form"
       class="mx-auto flex flex-col max-w-7xl gap-4 h-full pt-4 pb-12"
+      role="main"
       onSubmit={onSubmit}
     >
       <Switch>

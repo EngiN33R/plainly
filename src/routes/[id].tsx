@@ -84,7 +84,10 @@ export default function View() {
   });
 
   return (
-    <div class="mx-auto flex flex-col max-w-7xl gap-4 h-full pt-4 pb-12">
+    <main
+      id="shared-content"
+      class="mx-auto flex flex-col max-w-7xl gap-4 h-full pt-4 pb-12"
+    >
       <h1 class="text-center text-4xl font-semibold text-white">
         Shared{" "}
         <Switch fallback={<span>content</span>}>
@@ -163,6 +166,6 @@ export default function View() {
           </button>
         </div>
       </DeleteForm>
-    </div>
+    </main>
   );
 }
