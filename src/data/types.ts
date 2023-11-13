@@ -22,14 +22,3 @@ export type PasteDto = Omit<RawPasteDto, "content" | "deleteCode"> & {
 };
 export type CreatePasteDto = Insertable<PasteTable>;
 export type UpdatePasteDto = Updateable<PasteTable>;
-
-// export interface PasteDto {
-//   id: string;
-//   content: string;
-//   type: "text" | "link" | "file";
-//   salt?: string;
-//   iv?: string;
-//   created?: string;
-// }
-// export type CreatePasteDto = PasteDto;
-// export type UpdatePasteDto = PasteDto;
