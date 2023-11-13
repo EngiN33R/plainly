@@ -1,5 +1,5 @@
 import { Match, Show, Switch, createEffect, createSignal } from "solid-js";
-import { RouteDataArgs, useRouteData } from "solid-start";
+import { RouteDataArgs, createRouteAction, useRouteData } from "solid-start";
 import {
   createServerAction$,
   createServerData$,
@@ -30,6 +30,33 @@ export function routeData({ params }: RouteDataArgs) {
 
 export default function View() {
   const paste = useRouteData<typeof routeData>();
+  const [, { Form: DecryptForm }] = createRouteAction(
+    async (data: FormData) => {
+      const value = paste();
+      if (value?.iv && value?.salt) {
+        const { plaintext } = await decrypt(
+          value.content,
+          data.get("passphrase") as string,
+          value.iv,
+          value.salt
+        );
+        const decoder = new TextDecoder("utf-8");
+        if (value.type === "link") {
+          const dec = decoder.decode(plaintext);
+          location.href = dec;
+        } else if (value.type === "text") {
+          const dec = decoder.decode(plaintext);
+          setDecoded(dec);
+        } else if (value.type === "file") {
+          setDecoded(
+            await blobToDataURL(
+              new Blob([plaintext], { type: value.mime ?? "text/plain" })
+            )
+          );
+        }
+      }
+    }
+  );
   const [, { Form: DeleteForm }] = createServerAction$(
     async (formData: FormData) => {
       const id = formData.get("id") as string;
@@ -78,36 +105,7 @@ export default function View() {
         </h2>
       </Show>
       <Show when={paste()?.iv}>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const data = new FormData(e.currentTarget);
-            const value = paste();
-            if (value?.iv && value?.salt) {
-              const { plaintext } = await decrypt(
-                value.content,
-                data.get("passphrase") as string,
-                value.iv,
-                value.salt
-              );
-              const decoder = new TextDecoder("utf-8");
-              if (value.type === "link") {
-                const dec = decoder.decode(plaintext);
-                location.href = dec;
-              } else if (value.type === "text") {
-                const dec = decoder.decode(plaintext);
-                setDecoded(dec);
-              } else if (value.type === "file") {
-                setDecoded(
-                  await blobToDataURL(
-                    new Blob([plaintext], { type: value.mime ?? "text/plain" })
-                  )
-                );
-              }
-            }
-          }}
-          class="flex flex-col gap-2"
-        >
+        <DecryptForm class="flex flex-col gap-2">
           <label for="passphrase" class="font-semibold text-white">
             Passphrase
           </label>
@@ -125,7 +123,7 @@ export default function View() {
               </Switch>
             </button>
           </div>
-        </form>
+        </DecryptForm>
       </Show>
       <Switch>
         <Match when={paste()?.type === "file"}>
