@@ -33,6 +33,7 @@ export function PasteForm({
 
   const [secret, setSecret] = createSignal(false);
   const [id, setId] = createSignal<string | false | null>(null);
+  const [error, setError] = createSignal<string | null>(null);
   const [disabled, setDisabled] = createSignal(false);
   const [copied, setCopied] = createSignal(false);
 
@@ -72,10 +73,14 @@ export function PasteForm({
       }
 
       if (import.meta.env.VITE_PROTECTED === "true") {
-        payload.apiKey = prompt("Please enter your API key") ?? undefined;
+        payload.apiKey = window.localStorage.getItem("api-key") ?? undefined;
+        if (!payload.apiKey) {
+          payload.apiKey = prompt("Please enter your API key") ?? undefined;
+        }
       }
       const response = await save(payload);
       if (response?.status === 401) {
+        setError("INVALID_API_KEY");
         throw new Error(await response.text());
       } else {
         setId((await response?.text()) ?? id);
@@ -121,12 +126,9 @@ export function PasteForm({
             <div class="bg-red-800 text-white px-4 py-4 rounded-lg">
               <strong class="text-xl">Error</strong>
               <p>
-                An error occurred when trying to share your content. Please
-                check the form
-                {import.meta.env.VITE_PROTECTED === "true"
-                  ? " and API key "
-                  : " "}
-                and try again.
+                {error() === "INVALID_API_KEY"
+                  ? "Your API key is invalid. Please check your API key and try again."
+                  : "An error occurred when trying to share your content. Please check the form and try again."}
               </p>
             </div>
           </Show>

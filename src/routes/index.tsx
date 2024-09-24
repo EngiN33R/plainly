@@ -38,6 +38,13 @@ export default function Default() {
         <Box href="/link">Link</Box>
         <Box href="/file">File</Box>
       </nav>
+
+      {import.meta.env.VITE_PROTECTED === "true" && (
+        <p class="w-full mt-8 text-center text-white bg-yellow-500/25 px-3 py-6 rounded-lg shadow-md">
+          <strong>Protected</strong> mode is enabled. You can only share content
+          with a valid API key.
+        </p>
+      )}
     </main>
   );
 }
