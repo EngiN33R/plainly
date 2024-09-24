@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { Accessor, JSX, Match, Show, Switch, createSignal } from "solid-js";
 import { A } from "solid-start";
-import { createServerAction$ } from "solid-start/server";
+import { createServerAction$, createServerData$ } from "solid-start/server";
 import { createPaste } from "~/data/paste";
 import { CreatePasteDto, PasteDto } from "~/data/types";
 import { base64ToBinary, binaryToBase64, encrypt } from "~/util";
@@ -18,6 +18,7 @@ export function PasteForm({
   type: PasteDto["type"];
   children: (props: { disabled: Accessor<boolean> }) => JSX.Element;
 }) {
+  const appUrl = createServerData$(() => process.env.APP_URL);
   const [, save] = createServerAction$(
     async ({ apiKey, ...data }: CreatePasteLocalDto) => {
       if (!process.env.API_KEY || apiKey === process.env.API_KEY) {
@@ -103,7 +104,7 @@ export function PasteForm({
               id="id"
               name="id"
               class="py-2 px-3 rounded-md bg-slate-800 bg-opacity-50 text-white cursor-pointer w-full text-center"
-              value={`${import.meta.env.VITE_ROOT_URL}/${id()}`}
+              value={`${appUrl()}/${id()}`}
               readonly
               onClick={(e) => {
                 e.currentTarget.select();

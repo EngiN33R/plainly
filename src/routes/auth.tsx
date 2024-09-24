@@ -26,6 +26,7 @@ export default function Auth() {
         name="api_key"
         class="py-2 px-3 rounded-md bg-slate-800 bg-opacity-50 text-white"
         value={localStorage.getItem("api-key") ?? ""}
+        type="password"
         required
       />
       <button
