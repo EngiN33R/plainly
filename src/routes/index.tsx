@@ -1,5 +1,6 @@
 import { JSX } from "solid-js";
 import { A } from "solid-start";
+import { createServerData$ } from "solid-start/server";
 
 const Box = ({ href, children }: { href: string; children: JSX.Element }) => (
   <A
@@ -11,6 +12,8 @@ const Box = ({ href, children }: { href: string; children: JSX.Element }) => (
 );
 
 export default function Default() {
+  const authEnabled = createServerData$(() => !!process.env.API_KEY);
+
   return (
     <main class="py-8 max-w-xl mx-auto flex flex-col items-center">
       <h1 class="text-center text-7xl font-semibold text-white">
@@ -39,7 +42,7 @@ export default function Default() {
         <Box href="/file">File</Box>
       </nav>
 
-      {import.meta.env.VITE_PROTECTED === "true" && (
+      {authEnabled() && (
         <p class="w-full mt-8 text-center text-white bg-yellow-500/25 px-3 py-6 rounded-lg shadow-md">
           <strong>Protected</strong> mode is enabled. You can only share content
           with a valid API key.

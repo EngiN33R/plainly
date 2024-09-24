@@ -14,6 +14,7 @@ import {
   Title,
 } from "solid-start";
 import "./root.css";
+import { createServerData$ } from "solid-start/server";
 
 const NavItem = ({ href, children }: { href: string; children: string }) => {
   const location = useLocation();
@@ -35,6 +36,8 @@ const NavItem = ({ href, children }: { href: string; children: string }) => {
 };
 
 export default function Root() {
+  const authEnabled = createServerData$(() => !!process.env.API_KEY);
+
   return (
     <Html lang="en">
       <Head>
@@ -51,7 +54,7 @@ export default function Root() {
                 <NavItem href="/link">Link</NavItem>
                 <NavItem href="/file">File</NavItem>
               </nav>
-              {import.meta.env.VITE_PROTECTED === "true" && (
+              {authEnabled() && (
                 <A
                   class="absolute right-0 top-0 bottom-0 flex items-center px-4 text-gray-200"
                   href="/auth"

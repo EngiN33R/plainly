@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import { Accessor, JSX, Match, Show, Switch, createSignal } from "solid-js";
+import { A } from "solid-start";
 import { createServerAction$ } from "solid-start/server";
 import { createPaste } from "~/data/paste";
 import { CreatePasteDto, PasteDto } from "~/data/types";
@@ -72,12 +73,7 @@ export function PasteForm({
         payload.iv = iv;
       }
 
-      if (import.meta.env.VITE_PROTECTED === "true") {
-        payload.apiKey = window.localStorage.getItem("api-key") ?? undefined;
-        if (!payload.apiKey) {
-          payload.apiKey = prompt("Please enter your API key") ?? undefined;
-        }
-      }
+      payload.apiKey = window.localStorage.getItem("api-key") ?? undefined;
       const response = await save(payload);
       if (response?.status === 401) {
         setError("INVALID_API_KEY");
@@ -126,9 +122,17 @@ export function PasteForm({
             <div class="bg-red-800 text-white px-4 py-4 rounded-lg">
               <strong class="text-xl">Error</strong>
               <p>
-                {error() === "INVALID_API_KEY"
-                  ? "Your API key is invalid. Please check your API key and try again."
-                  : "An error occurred when trying to share your content. Please check the form and try again."}
+                {error() === "INVALID_API_KEY" ? (
+                  <>
+                    Your API key is invalid. Please{" "}
+                    <A class="underline" href="/auth">
+                      check your API key
+                    </A>{" "}
+                    and try again.
+                  </>
+                ) : (
+                  "An error occurred when trying to share your content. Please check the form and try again."
+                )}
               </p>
             </div>
           </Show>
