@@ -14,6 +14,7 @@ import {
   Title,
 } from "solid-start";
 import "./root.css";
+import githubIcon from "./assets/github.png";
 import { createServerData$ } from "solid-start/server";
 
 const NavItem = ({ href, children }: { href: string; children: string }) => {
@@ -37,6 +38,7 @@ const NavItem = ({ href, children }: { href: string; children: string }) => {
 
 export default function Root() {
   const authEnabled = createServerData$(() => !!process.env.API_KEY);
+  const isWhitelabeled = createServerData$(() => process.env.WHITELABEL);
 
   return (
     <Html lang="en">
@@ -48,20 +50,24 @@ export default function Root() {
       <Body class="bg-slate-700">
         <Suspense>
           <ErrorBoundary>
-            <div class="bg-slate-800 relative">
+            <div class="bg-slate-800 relative flex justify-between">
               <nav class="h-14 w-full max-w-7xl mx-auto flex justify-center text-gray-200">
                 <NavItem href="/text">Text</NavItem>
                 <NavItem href="/link">Link</NavItem>
                 <NavItem href="/file">File</NavItem>
               </nav>
-              {authEnabled() && (
-                <A
-                  class="absolute right-0 top-0 bottom-0 flex items-center px-4 text-gray-200"
-                  href="/auth"
-                >
-                  🔐
-                </A>
-              )}
+              <div class="flex items-center px-4 gap-4">
+                {!isWhitelabeled() && (
+                  <A href="//github.com/EngiN33R/plainly">
+                    <img class="block" src={githubIcon} />
+                  </A>
+                )}
+                {authEnabled() && (
+                  <A class="flex items-center text-gray-200" href="/auth">
+                    🔐
+                  </A>
+                )}
+              </div>
             </div>
             <div class="main px-3 xl:px-0">
               <Routes>
