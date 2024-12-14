@@ -20,7 +20,7 @@
     "@solidjs/router": "^0.8.3",
     "better-sqlite3": "^9.1.1",
     "kysely": "^0.26.3",
-    "nanoid": "^3.3.7",
+    "nanoid": "^3.3.8",
     "solid-js": "^1.8.5",
     "solid-start": "^0.3.10"
   },
