@@ -21,7 +21,7 @@
     "better-sqlite3": "^9.1.1",
     "kysely": "^0.26.3",
     "nanoid": "^3.3.7",
-    "solid-js": "^1.8.5",
+    "solid-js": "^1.9.5",
     "solid-start": "^0.3.10"
   },
   "engines": {
